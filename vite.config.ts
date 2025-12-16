@@ -6,7 +6,16 @@ export default defineConfig(({ mode }) => {
   // Load env file based on `mode` in the current working directory.
   // Set the third parameter to '' to load all env vars regardless of prefix, 
   // or 'REACT_APP_' to specificially load those. We'll use 'REACT_APP_' to match CRA.
+  // Load env file based on `mode` in the current working directory.
   const env = loadEnv(mode, process.cwd(), 'REACT_APP_');
+
+  // Shim for Vercel/System envs: merge process.env values into the loaded env
+  // avoiding conflicts with existing keys if already loaded, but Vercel injected vars should likely take precedence or exist where files don't.
+  Object.keys(process.env).forEach(key => {
+    if (key.startsWith('REACT_APP_')) {
+      env[key] = process.env[key];
+    }
+  });
 
   return {
     plugins: [react()],
